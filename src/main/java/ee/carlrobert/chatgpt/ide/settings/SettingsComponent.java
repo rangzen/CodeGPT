@@ -5,6 +5,7 @@ import com.intellij.ui.PortField;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.JBRadioButton;
 import com.intellij.ui.components.JBTextField;
+import com.intellij.ui.components.MultiColumnList;
 import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UI;
@@ -37,6 +38,7 @@ public class SettingsComponent {
   private final ComboBox<Proxy.Type> proxyTypeComboBox;
   private final JBTextField proxyHostField;
   private final PortField proxyPortField;
+  private final MultiColumnList customPrompts;
 
   public SettingsComponent(SettingsState settings) {
     apiKeyField = new JBTextField(settings.apiKey, 1);
@@ -72,10 +74,19 @@ public class SettingsComponent {
     useChatCompletionRadioButton = new JBRadioButton("Use chat completion", settings.isChatCompletionOptionSelected);
     useTextCompletionRadioButton = new JBRadioButton("Use text completion", settings.isTextCompletionOptionSelected);
     useChatGPTRadioButton = new JBRadioButton("Use ChatGPT's unofficial API (unstable)", settings.isChatGPTOptionSelected);
+    customPrompts = new MultiColumnList(
+            "Explain", "Explain the following code:\n\n{{content_selected}}",
+            "Create tests", "Create tests for the following code:\n\n{{content_selected}}"
+    );
+    customPrompts.setFixedColumnsMode(2);
     mainPanel = FormBuilder.createFormBuilder()
         .addComponent(new TitledSeparator("Integration Preference"))
         .addVerticalGap(8)
         .addComponent(createMainSelectionForm())
+        .addVerticalGap(8)
+        .addComponent(new TitledSeparator("Custom Prompts"))
+        .addVerticalGap(8)
+        .addComponent(createCustomPromptsForm())
         .addVerticalGap(8)
         .addComponent(new TitledSeparator("HTTP/SOCKS Proxy"))
         .addVerticalGap(8)
@@ -256,6 +267,19 @@ public class SettingsComponent {
         .getPanel();
     panel.setBorder(JBUI.Borders.emptyLeft(24));
     return panel;
+  }
+
+  private JComponent createCustomPromptsForm() {
+    var promptsPanel = new JPanel();
+    promptsPanel.setBorder(JBUI.Borders.emptyLeft(16));
+    promptsPanel.setLayout(new BoxLayout(promptsPanel, BoxLayout.PAGE_AXIS));
+
+    var customPromptsPanel = UI.PanelFactory.panel(customPrompts)
+            .createPanel();
+    customPromptsPanel.setBorder(JBUI.Borders.emptyLeft(8));
+
+    promptsPanel.add(customPromptsPanel);
+    return promptsPanel;
   }
 
   private JComponent createProxySettingsForm() {
